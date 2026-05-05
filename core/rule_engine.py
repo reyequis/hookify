@@ -244,9 +244,13 @@ class RuleEngine:
                             file=sys.stderr,
                         )
                         return ""
-            elif field == "user_prompt":
-                # For UserPromptSubmit events
-                return input_data.get("user_prompt", "")
+            elif field == "user_prompt" or field == "prompt":
+                # UserPromptSubmit events. Claude Code passes the prompt
+                # text under key `prompt` (not `user_prompt`). Accept both
+                # field names so rules using either work. Without this,
+                # any rule with `field: user_prompt` silently never fires
+                # because `input_data.get("user_prompt", "")` returns "".
+                return input_data.get("prompt") or input_data.get("user_prompt", "")
 
         # Handle special cases by tool type
         if tool_name == "Bash":
